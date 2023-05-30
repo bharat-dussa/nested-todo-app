@@ -15,7 +15,6 @@ const AddTodo = ({
 }: IAddTodo) => {
   return (
     <div className="flex gap-4">
-      {" "}
       <input
         type="text"
         className="border-primary-600 bg-grey border rounded-md py-2 pl-2 shadow-sm pr-3"

@@ -1,0 +1,32 @@
+.nested-tree {
+  //   color: red;
+
+  // .ant-tree-list {
+  //     .ant-tree-list-holder {
+  //         .ant-tree-list-holder-inner {
+  //             .ant-tree-treenode .ant-tree-treenode-switcher-close .ant-tree-treenode-leaf-last {
+  //                 .ant-tree-switcher .ant-tree-switcher_close {
+  //                     color: red;
+  //                 }
+  //             }
+  //         }
+  //     }
+  // }
+
+  margin-top: 1rem;
+
+  .ant-tree-treenode .ant-tree-treenode-switcher-close {
+    display: flex;
+  }
+
+  .hide-action {
+    display: none;
+  }
+  .visible {
+    &:hover {
+      .hide-action {
+        display: flex;
+      }
+    }
+  }
+}

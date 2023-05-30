@@ -1,13 +1,12 @@
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 import NoTodo from "../not-todo/not-todo.component";
 import AddTodo from "../common/add-todo.component";
-import { Button, Modal, Tree } from "antd";
+import { Modal, Tree } from "antd";
 import {
   LOCAL_KEYS,
   getLocalStorageItem,
   setLocalStorageItem,
 } from "../../utils/local-storage.util";
-import "./nested-todo.less";
 import TextArea from "antd/es/input/TextArea";
 import {
   deleteTodoRecursively,
@@ -16,6 +15,9 @@ import {
   handleAddSubTodoRecursively,
   toggleTodoRecursively,
 } from "../../utils/common.utils";
+import "./nested-todo.less";
+import { DeleteOutlined, FileAddOutlined } from "@ant-design/icons";
+import DeleteModal from "../modals/delete-modal.component";
 
 interface Todo {
   id: string;
@@ -36,6 +38,7 @@ const TodoApp: React.FC = () => {
   const [selectedKeys, setSelectedKeys] = useState<React.Key[]>([]);
   const [currentSelectedTodo, setCurrentSelectedTodo] = useState<Todo>();
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
 
   const onCheck = (checkedKeysValue: any, { node }: any) => {
     const { key } = node;
@@ -129,13 +132,18 @@ const TodoApp: React.FC = () => {
     setIsModalOpen(false);
   };
 
+  const handleDeleteModal = (todo: Todo) => {
+    setShowDeleteModal(true);
+    setCurrentSelectedTodo(todo);
+  };
+
   const convertResponseToTodoList = useCallback(
     (data: Todo[]) => {
       const convertTodo = (todo: any) => {
         return {
           title: () => (
-            <div>
-              <div className="flex justify-between gap-16 p-4">
+            <div className="nested-todo visible">
+              <div className="flex justify-between gap-16">
                 <p
                   className={
                     checkedKeys.includes(todo.id)
@@ -146,10 +154,19 @@ const TodoApp: React.FC = () => {
                   {todo.name}
                 </p>
                 <div className="flex gap-4">
-                  <Button onClick={() => handleDeleteTodo(todo.id)}>x</Button>
-                  <Button type="primary" onClick={() => showModal(todo)}>
-                    +
-                  </Button>
+                  <DeleteOutlined
+                    style={{
+                      color: "red",
+                    }}
+                    onClick={() => handleDeleteModal(todo)}
+                  />
+                  <FileAddOutlined
+                    style={{
+                      color: "text-primary-600",
+                    }}
+                    type="primary"
+                    onClick={() => showModal(todo)}
+                  />
                 </div>
               </div>
             </div>
@@ -161,7 +178,7 @@ const TodoApp: React.FC = () => {
 
       return data.map(convertTodo);
     },
-    [checkedKeys, handleDeleteTodo]
+    [checkedKeys]
   );
 
   const treeData = useMemo(
@@ -172,6 +189,15 @@ const TodoApp: React.FC = () => {
   useEffect(() => {
     setLocalStorageItem(LOCAL_KEYS.USER_TASKS, todos);
   }, [todos, handleToggleTodo]);
+
+  const handleOnOKDeleteModal = () => {
+    handleDeleteTodo(currentSelectedTodo?.id as string);
+    setShowDeleteModal(false);
+  };
+
+  const handleOnCancelDeleteModal = () => {
+    setShowDeleteModal(false);
+  };
 
   return (
     <div className="p-4 flex flex-col justify-center">
@@ -184,18 +210,16 @@ const TodoApp: React.FC = () => {
         />
       </div>
       {todos.length > 0 ? (
-        <>
-          <Tree
-            className=""
-            checkable
-            checkStrictly
-            onCheck={onCheck}
-            checkedKeys={checkedKeys}
-            onSelect={onSelect}
-            selectedKeys={selectedKeys}
-            treeData={treeData}
-          />
-        </>
+        <Tree
+          className="nested-tree"
+          checkable
+          checkStrictly
+          onCheck={onCheck}
+          checkedKeys={checkedKeys}
+          onSelect={onSelect}
+          selectedKeys={selectedKeys}
+          treeData={treeData}
+        />
       ) : (
         <NoTodo />
       )}
@@ -217,6 +241,13 @@ const TodoApp: React.FC = () => {
           onChange={(e) => setSubNewTodoName(e.target.value)}
         />
       </Modal>
+
+      <DeleteModal
+        open={showDeleteModal}
+        onOk={handleOnOKDeleteModal}
+        onCancel={handleOnCancelDeleteModal}
+        currentSelectedTodo={currentSelectedTodo}
+      />
     </div>
   );
 };
