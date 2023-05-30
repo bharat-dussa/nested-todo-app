@@ -1,158 +1,207 @@
 import React, { useState } from "react";
-import { Todo } from "../../utils/interfaces/todo.interface";
 
-const TodoList = () => {
+interface Todo {
+  id: string;
+  name: string;
+  isChecked: boolean;
+  subTodos: Todo[];
+}
+
+const TodoApp: React.FC = () => {
   const [todos, setTodos] = useState<Todo[]>([]);
   const [newTodoName, setNewTodoName] = useState("");
 
-  const handleAddTodo = (parentId: string | null) => {
-    console.log('parentId:', parentId, todos);
+
+  const handleAddTodo = () => {
     if (newTodoName.trim() === "") {
       return;
     }
 
     const newTodo: Todo = {
-      dateOfCreation: getCurrentDate(),
       id: generateId(),
       name: newTodoName,
       isChecked: false,
       subTodos: [],
-      pos: "0"
     };
 
-    if (parentId) {
-      const updatedTodos = todos.map((todo) => {
-        if (todo.id === parentId) {
-          return {
-            ...todo,
-            subTodos: [...todo.subTodos, newTodo],
-          };
-        }
-        return todo;
-      });
-
-      setTodos(updatedTodos);
-    } else {
-      setTodos([...todos, newTodo]);
-    }
+    setTodos((prevTodos) => [...prevTodos, newTodo]);
+    setNewTodoName("");
   };
 
-
-  const handleAddSubTodo = (parentId: string) => {
-    
-    handleAddTodo(parentId);
-  };
-
-  const handleDeleteTodo = (parentId: string | null, todoId: string) => {
-    if (parentId) {
-      const updatedTodos = todos.map((todo) => {
-        if (todo.id === parentId) {
-          return {
-            ...todo,
-            subTodos: todo.subTodos.filter((subTodo) => subTodo.id !== todoId),
-          };
-        }
-        return todo;
-      });
-
-      setTodos(updatedTodos);
-    } else {
-      setTodos(todos.filter((todo) => todo.id !== todoId));
-    }
-  };
-
-  const handleToggleTodo = (parentId: string | null, todoId: string) => {
-    const updatedTodos = todos.map((todo) => {
-      if (todo.id === parentId) {
+  const toggleTodoRecursively = (todos: Todo[], todoId: string): Todo[] => {
+    return todos.map((todo) => {
+      if (todo.id === todoId) {
+        return { ...todo, isChecked: !todo.isChecked };
+      } else if (todo.subTodos.length > 0) {
         return {
           ...todo,
-          subTodos: todo.subTodos.map((subTodo) => {
-            if (subTodo.id === todoId) {
-              return {
-                ...subTodo,
-                isChecked: !subTodo.isChecked,
-              };
-            }
-            return subTodo;
-          }),
+          subTodos: toggleTodoRecursively(todo.subTodos, todoId),
         };
+      } else {
+        return todo;
       }
-      return todo;
     });
-
-    setTodos(updatedTodos);
   };
 
-  const getCurrentDate = () => {
-    const currentDate = new Date();
-    const day = currentDate.getDate().toString().padStart(2, "0");
-    const month = (currentDate.getMonth() + 1).toString().padStart(2, "0");
-    const year = currentDate.getFullYear().toString();
-    return `${day}/${month}/${year}`;
+  const handleToggleTodo = (todoId: string) => {
+    setTodos((prevTodos) => {
+      return toggleTodoRecursively(prevTodos, todoId);
+    });
   };
 
-  const generateId = () => {
-    return Math.random().toString(36).substr(2, 9);
+  const handleDeleteTodo = (todoId: string) => {
+    setTodos((prevTodos) => {
+      return deleteTodoRecursively(prevTodos, todoId);
+    });
+  };
+  
+  const deleteTodoRecursively = (todos: Todo[], todoId: string): Todo[] => {
+    let updatedTodos: Todo[] = [];
+  
+    for (let i = 0; i < todos.length; i++) {
+      const todo = todos[i];
+  
+      if (todo.id === todoId) {
+        // Skip the current todo and its sub-todos
+        continue;
+      }
+  
+      const updatedSubTodos = deleteTodoRecursively(todo.subTodos, todoId);
+  
+      updatedTodos.push({
+        ...todo,
+        subTodos: updatedSubTodos,
+      });
+    }
+  
+    return updatedTodos;
+  };
+  
+  
+
+  const handleAddSubTodo = (parentId: string) => {
+    const subTodoName = prompt("Enter SubTodo name:");
+    if (!subTodoName || subTodoName.trim() === "") {
+      return;
+    }
+
+    const newSubTodo: Todo = {
+      id: generateId(),
+      name: subTodoName,
+      isChecked: false,
+      subTodos: [],
+    };
+
+    setTodos((prevTodos) =>
+      prevTodos.map((todo) => {
+        if (todo.id === parentId) {
+          return {
+            ...todo,
+            subTodos: [...todo.subTodos, newSubTodo],
+          };
+        } else if (todo.subTodos.length > 0) {
+          return {
+            ...todo,
+            subTodos: handleAddSubTodoRecursively(
+              todo.subTodos,
+              parentId,
+              newSubTodo
+            ),
+          };
+        } else {
+          return todo;
+        }
+      })
+    );
   };
 
-  const renderTodo = (todo: Todo, parentId: string | null) => {
+  const handleAddSubTodoRecursively = (
+    subTodos: Todo[],
+    parentId: string,
+    newSubTodo: Todo
+  ): Todo[] => {
+    return subTodos.map((subTodo) => {
+      if (subTodo.id === parentId) {
+        return {
+          ...subTodo,
+          subTodos: [...subTodo.subTodos, newSubTodo],
+        };
+      } else if (subTodo.subTodos.length > 0) {
+        return {
+          ...subTodo,
+          subTodos: handleAddSubTodoRecursively(
+            subTodo.subTodos,
+            parentId,
+            newSubTodo
+          ),
+        };
+      } else {
+        return subTodo;
+      }
+    });
+  };
+
+  const generateId = (): string => {
+    return "_" + Math.random().toString(36).substr(2, 9);
+  };
+
+  console.log("todos:", todos);
+
+  const renderTodo = (todo: Todo) => {
     return (
       <li key={todo.id} className="pl-4 py-2">
         <div className="flex items-center">
           <input
             type="checkbox"
             checked={todo.isChecked}
-            onChange={() => handleToggleTodo(parentId, todo.id)}
+            onChange={() => handleToggleTodo(todo.id)}
             className="mr-2"
           />
           <span className={todo.isChecked ? "line-through" : ""}>
             {todo.name}
           </span>
+          <button onClick={() => handleDeleteTodo(todo.id)}>Delete</button>
         </div>
+        
         <div className="pl-8">
-          {todo.subTodos.length > 0 && (
-            <ul>
-              {todo.subTodos.map((subTodo) => renderTodo(subTodo, todo.id))}
-            </ul>
-          )}
-          <button
+        {todo.subTodos.length > 0 && (
+          <ul>{todo.subTodos.map((subTodo) => renderTodo(subTodo))}</ul>
+        )}
+          <input
+            type="text"
             className="text-sm text-blue-500 hover:text-blue-700"
-            onClick={() => handleAddSubTodo(todo.id)}
-          >
-            Add SubTodo
-          </button>
-          <button
-            className="ml-2 text-red-500 hover:text-red-700"
-            onClick={() => handleDeleteTodo(parentId, todo.id)}
-          >
-            Delete
-          </button>
+            placeholder="Add SubTodo"
+            onChange={(e) => handleNewSubTodoChange(e, todo.id)}
+          />
+          <button onClick={() => handleAddSubTodo(todo.id)}>Add</button>
         </div>
       </li>
     );
   };
 
+  const handleNewSubTodoChange = (
+    e: React.ChangeEvent<HTMLInputElement>,
+    parentId: string
+  ) => {
+    // Add your logic to handle the input change for sub-todo
+  };
+
   return (
     <div className="p-4">
-      <h1 className="text-2xl font-bold mb-4">Todo List</h1>
-      <div className="flex gap-6">
+      <h1 className="text-2xl font-bold mb-4">Todo App</h1>
+      <div>
         <input
+          type="text"
           className="border-primary-600 bg-grey"
           value={newTodoName}
+          placeholder="Enter Todo"
           onChange={(e) => setNewTodoName(e.target.value)}
-          type="text"
         />
-        <button
-          className="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 mr-2 mb-2 dark:bg-blue-600 dark:hover:bg-blue-700 focus:outline-none dark:focus:ring-blue-800"
-          onClick={() => handleAddTodo(null)}
-        >
-          Add Todo
-        </button>
+        <button onClick={handleAddTodo}>Add Todo</button>
       </div>
-
-      <ul>{todos.map((todo) => renderTodo(todo, null))}</ul>
+      <ul>{todos.map((todo) => renderTodo(todo))}</ul>
     </div>
   );
 };
 
-export default TodoList;
+export default TodoApp;
