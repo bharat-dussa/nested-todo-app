@@ -6,54 +6,57 @@ export const generateId = (): string => {
 };
 
 export const deleteTodoRecursively = (
-  todos: Todo[],
+  todos: Todo[] | undefined,
   todoId: string
 ): Todo[] => {
-  let updatedTodos: Todo[] = [];
-
-  for (let i = 0; i < todos.length; i++) {
-    const todo = todos[i];
-
-    if (todo.id === todoId) {
-      continue;
-    }
-
-    const updatedSubTodos = deleteTodoRecursively(todo.subTodos, todoId);
-
-    updatedTodos.push({
-      ...todo,
-      subTodos: updatedSubTodos,
-    });
+  if (!Array.isArray(todos) || typeof todoId !== "string") {
+    throw new Error("Invalid parameters");
   }
+  const updatedTodos = todos.reduce((acc: Todo[], todo: Todo) => {
+    if (todo.id === todoId) {
+      return acc;
+    }
+    const updatedSubTodos = deleteTodoRecursively(todo.subTodos, todoId);
+    return [
+      ...acc,
+      {
+        ...todo,
+        subTodos: updatedSubTodos,
+      },
+    ];
+  }, []);
 
   return updatedTodos;
 };
-
 export const toggleTodoRecursively = (
-  todos: Todo[],
+  todos: Todo[] | undefined,
   todoId: string
 ): Todo[] => {
-  return todos.map((todo) => {
+  if (!Array.isArray(todos) || typeof todoId !== "string") {
+    throw new Error("Invalid parameters");
+  }
+
+  const updatedTodos = todos.map((todo: Todo) => {
     if (todo.id === todoId) {
       return { ...todo, isChecked: !todo.isChecked };
     } else if (todo.subTodos.length > 0) {
+      const updatedSubTodos = toggleTodoRecursively(todo.subTodos, todoId);
       return {
         ...todo,
-        subTodos: toggleTodoRecursively(todo.subTodos, todoId),
+        subTodos: updatedSubTodos,
       };
     } else {
       return todo;
     }
   });
+
+  return updatedTodos;
 };
 
-export const extractCheckedIds = (_todos?: Todo[]) => {
-  let checkedIds: string[] = [];
-  const todos = !_todos
-    ? (getLocalStorageItem(LOCAL_KEYS.USER_TASKS) as Todo[])
-    : _todos;
-
-  todos.forEach((todo) => {
+export const extractCheckedIds = (
+  todos: Todo[] = getLocalStorageItem(LOCAL_KEYS.USER_TASKS) as Todo[]
+): string[] => {
+  return todos.reduce((checkedIds: string[], todo: Todo) => {
     if (todo.isChecked) {
       checkedIds.push(todo.id);
     }
@@ -62,9 +65,9 @@ export const extractCheckedIds = (_todos?: Todo[]) => {
       const subCheckedIds = extractCheckedIds(todo.subTodos);
       checkedIds = checkedIds.concat(subCheckedIds);
     }
-  });
 
-  return checkedIds;
+    return checkedIds;
+  }, []);
 };
 
 export const handleAddSubTodoRecursively = (
@@ -93,21 +96,12 @@ export const handleAddSubTodoRecursively = (
   });
 };
 
-export const countTotalData = (data: Todo[]) => {
-  let count = 0;
+export const countTotalData = (data: Todo[]): number => {
+  let count = data.length;
 
-  const traverse = (items: Todo[]) => {
-    count += items.length;
-
-    for (let i = 0; i < items.length; i++) {
-      const subTodos = items[i].subTodos;
-      if (subTodos.length > 0) {
-        traverse(subTodos);
-      }
-    }
-  };
-
-  traverse(data);
+  data.forEach((todo) => {
+    count += countTotalData(todo.subTodos);
+  });
 
   return count;
 };
