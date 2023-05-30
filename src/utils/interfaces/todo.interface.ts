@@ -4,7 +4,6 @@ export interface Todo {
   isChecked: boolean;
   name: string;
   subTodos: Todo[];
-  pos: string
 }
 
 export interface TodoList {

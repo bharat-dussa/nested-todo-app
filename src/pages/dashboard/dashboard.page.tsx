@@ -1,13 +1,14 @@
 import TodoApp from "../../components/nested-todo/nested-todo.component";
-
+import ProfileCard from "../../components/profile-card/profile-card.component";
+import { useAuth } from "../../store/app-store";
 
 const DashboardPage = () => {
-  
+  const { userDetails } = useAuth();
   return (
-    <div>
-      DashboardPage
+    <>
+      <ProfileCard UserDetails={userDetails} />
       <TodoApp />
-    </div>
+    </>
   );
 };
 

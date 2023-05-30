@@ -1,4 +1,7 @@
 import React, { useState } from "react";
+import NoTodo from "../not-todo/not-todo.component";
+import DialogInput from "../dialog/dialog.component";
+import AddTodo from "../common/add-todo.component";
 
 interface Todo {
   id: string;
@@ -10,8 +13,13 @@ interface Todo {
 const TodoApp: React.FC = () => {
   const [todos, setTodos] = useState<Todo[]>([]);
   const [newTodoName, setNewTodoName] = useState("");
+  const [newSubTodoName, setSubNewTodoName] = useState("");
 
+  const [showSubTodoModal, setShowSubTodoModal] = useState(false);
 
+  const handleCloseModal = () => {
+    setShowSubTodoModal(false);
+  };
   const handleAddTodo = () => {
     if (newTodoName.trim() === "") {
       return;
@@ -54,33 +62,30 @@ const TodoApp: React.FC = () => {
       return deleteTodoRecursively(prevTodos, todoId);
     });
   };
-  
+
   const deleteTodoRecursively = (todos: Todo[], todoId: string): Todo[] => {
     let updatedTodos: Todo[] = [];
-  
+
     for (let i = 0; i < todos.length; i++) {
       const todo = todos[i];
-  
+
       if (todo.id === todoId) {
-        // Skip the current todo and its sub-todos
         continue;
       }
-  
+
       const updatedSubTodos = deleteTodoRecursively(todo.subTodos, todoId);
-  
+
       updatedTodos.push({
         ...todo,
         subTodos: updatedSubTodos,
       });
     }
-  
+
     return updatedTodos;
   };
-  
-  
 
   const handleAddSubTodo = (parentId: string) => {
-    const subTodoName = prompt("Enter SubTodo name:");
+    const subTodoName = newSubTodoName;
     if (!subTodoName || subTodoName.trim() === "") {
       return;
     }
@@ -113,6 +118,9 @@ const TodoApp: React.FC = () => {
         }
       })
     );
+
+    setSubNewTodoName("");
+    setShowSubTodoModal(false);
   };
 
   const handleAddSubTodoRecursively = (
@@ -149,57 +157,71 @@ const TodoApp: React.FC = () => {
 
   const renderTodo = (todo: Todo) => {
     return (
-      <li key={todo.id} className="pl-4 py-2">
-        <div className="flex items-center">
-          <input
-            type="checkbox"
-            checked={todo.isChecked}
-            onChange={() => handleToggleTodo(todo.id)}
-            className="mr-2"
-          />
-          <span className={todo.isChecked ? "line-through" : ""}>
-            {todo.name}
-          </span>
-          <button onClick={() => handleDeleteTodo(todo.id)}>Delete</button>
+      <li key={todo.id} className="pl-4 py-2 border p-8">
+        <div className="flex items-center gap-4 justify-between">
+          <div>
+            <input
+              type="checkbox"
+              checked={todo.isChecked}
+              onChange={() => handleToggleTodo(todo.id)}
+              className="mr-2"
+            />
+            <span
+              className={todo.isChecked ? "line-through text-slate-400" : ""}
+            >
+              {todo.name}
+            </span>
+          </div>
+          <div className="flex gap-4">
+            <button
+              className="bg-red-400	text-white p-1 px-3 rounded-md"
+              onClick={() => handleDeleteTodo(todo.id)}
+            >
+              Delete
+            </button>
+            <button
+              className="bg-primary-600	text-white p-1 px-3 rounded-md"
+              onClick={() => setShowSubTodoModal(true)}
+            >
+              Add sub todo
+            </button>
+          </div>
         </div>
-        
+
         <div className="pl-8">
-        {todo.subTodos.length > 0 && (
-          <ul>{todo.subTodos.map((subTodo) => renderTodo(subTodo))}</ul>
-        )}
-          <input
-            type="text"
-            className="text-sm text-blue-500 hover:text-blue-700"
-            placeholder="Add SubTodo"
-            onChange={(e) => handleNewSubTodoChange(e, todo.id)}
+          {todo.subTodos.length > 0 && (
+            <ul>{todo.subTodos.map((subTodo) => renderTodo(subTodo))}</ul>
+          )}
+          <DialogInput
+            handleCloseModal={handleCloseModal}
+            visible={showSubTodoModal}
+            dataFor={todo.name}
+            todoName={newSubTodoName}
+            onClickAddTodo={() => handleAddSubTodo(todo.id)}
+            onChangeAddTodo={(value) => setSubNewTodoName(value)}
           />
-          <button onClick={() => handleAddSubTodo(todo.id)}>Add</button>
         </div>
       </li>
     );
   };
 
-  const handleNewSubTodoChange = (
-    e: React.ChangeEvent<HTMLInputElement>,
-    parentId: string
-  ) => {
-    // Add your logic to handle the input change for sub-todo
-  };
-
   return (
-    <div className="p-4">
-      <h1 className="text-2xl font-bold mb-4">Todo App</h1>
-      <div>
-        <input
-          type="text"
-          className="border-primary-600 bg-grey"
-          value={newTodoName}
-          placeholder="Enter Todo"
-          onChange={(e) => setNewTodoName(e.target.value)}
+    <div className="p-4 flex flex-col justify-center">
+      <div className="flex flex-col items-center">
+        <h1 className="text-2xl font-bold mb-4">Your Todos</h1>
+        <AddTodo
+          todoName={newTodoName}
+          onChangeAddTodo={(value) => setNewTodoName(value)}
+          onClickAddTodo={handleAddTodo}
         />
-        <button onClick={handleAddTodo}>Add Todo</button>
       </div>
-      <ul>{todos.map((todo) => renderTodo(todo))}</ul>
+      {todos.length > 0 ? (
+        <div className="max-w-md max-w-auto mt-8">
+          <ul className="space-y-4">{todos.map((todo) => renderTodo(todo))}</ul>
+        </div>
+      ) : (
+        <NoTodo />
+      )}
     </div>
   );
 };

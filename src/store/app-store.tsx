@@ -16,12 +16,14 @@ import { toast } from "react-hot-toast";
 import { generateJwtToken } from "../utils/json-token.util";
 import { NavigateFunction, useNavigate } from "react-router-dom";
 import { APP_ROUTE } from "../utils/route.constant";
+import { User } from "../utils/interfaces/user.interface";
 
 interface AuthContextType {
   isLoggedIn: boolean;
   login: (payload: { email: string; password: string }) => void;
   logout: () => void;
-  isAuthenticated: boolean
+  isAuthenticated: boolean;
+  userDetails: User
 }
 
 const AuthContext = createContext<AuthContextType | null>(null);
@@ -54,8 +56,8 @@ export const wait = (
         email === MockUserDetails.email &&
         password === MockUserDetails.password
       ) {
-        const { password, ...restData } = MockUserDetails;
-        const token = generateJwtToken(MockUserDetails);
+        const { password, todos, ...restData } = MockUserDetails;
+        const token = generateJwtToken(restData);
 
         setLocalStorageItem(LOCAL_KEYS.ACCESS_TOKEN, token);
         setLocalStorageItem(LOCAL_KEYS.USER_DETAILS, restData);
@@ -78,6 +80,7 @@ export const AuthProvider: React.FC = ({ children }) => {
 
   const navigate = useNavigate();
 
+  const userDetails = MockUserDetails;
   const login = useCallback(
     async (payload: { email: string; password: string }) => {
       setIsLoggedIn(true);
@@ -107,7 +110,8 @@ export const AuthProvider: React.FC = ({ children }) => {
     isLoggedIn,
     login,
     logout,
-    isAuthenticated
+    isAuthenticated,
+    userDetails
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

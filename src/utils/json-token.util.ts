@@ -1,7 +1,7 @@
 // import jwt from "jsonwebtoken";
 import { User } from "./interfaces/user.interface";
 
-export const generateJwtToken = (userDetails: User) => {
+export const generateJwtToken = (userDetails: any) => {
   const payload = userDetails;
 
   const secretKey = 'yourSecretKey'

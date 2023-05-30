@@ -1,3 +1,5 @@
+import { Todo } from "./todo.interface";
+
 export interface User {
   address: string;
   dateOfBirth: string;
@@ -7,6 +9,7 @@ export interface User {
   name: string;
   phoneNumber: string;
   accessToken?: string;
+  todos: Todo[]
 }
 
 export interface Login {
