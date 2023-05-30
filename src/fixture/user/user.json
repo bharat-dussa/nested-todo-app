@@ -1,0 +1,34 @@
+{
+    "address": "123 Main Street, Anytown, USA",
+    "dateOfBirth": "January 15, 1990",
+    "email": "test@gmail.com",
+    "gender": "Male",
+    "name": "John Smith",
+    "password": "{Test@123}",
+    "phoneNumber": "+1 (555) 123-4567",
+    "todos": [
+        {
+            "dateOfCreation": "30/05/2023",
+            "id": "1234",
+            "isChecked": false,
+            "name": "test todo",
+            "subTodos": [
+                {
+                    "dateOfCreation": "30/05/2023",
+                    "id": "1234-1",
+                    "isChecked": false,
+                    "name": "test todo",
+                    "subTodos": [
+                        {
+                            "dateOfCreation": "30/05/2023",
+                            "id": "1234-1-1",
+                            "isChecked": false,
+                            "name": "test todo",
+                            "subTodos": []
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}
