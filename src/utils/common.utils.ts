@@ -67,29 +67,47 @@ export const extractCheckedIds = (_todos?: Todo[]) => {
   return checkedIds;
 };
 
-
 export const handleAddSubTodoRecursively = (
-    subTodos: Todo[],
-    parentId: string,
-    newSubTodo: Todo
-  ): Todo[] => {
-    return subTodos.map((subTodo) => {
-      if (subTodo.id === parentId) {
-        return {
-          ...subTodo,
-          subTodos: [...subTodo.subTodos, newSubTodo],
-        };
-      } else if (subTodo.subTodos.length > 0) {
-        return {
-          ...subTodo,
-          subTodos: handleAddSubTodoRecursively(
-            subTodo.subTodos,
-            parentId,
-            newSubTodo
-          ),
-        };
-      } else {
-        return subTodo;
+  subTodos: Todo[],
+  parentId: string,
+  newSubTodo: Todo
+): Todo[] => {
+  return subTodos.map((subTodo) => {
+    if (subTodo.id === parentId) {
+      return {
+        ...subTodo,
+        subTodos: [...subTodo.subTodos, newSubTodo],
+      };
+    } else if (subTodo.subTodos.length > 0) {
+      return {
+        ...subTodo,
+        subTodos: handleAddSubTodoRecursively(
+          subTodo.subTodos,
+          parentId,
+          newSubTodo
+        ),
+      };
+    } else {
+      return subTodo;
+    }
+  });
+};
+
+export const countTotalData = (data: Todo[]) => {
+  let count = 0;
+
+  const traverse = (items: Todo[]) => {
+    count += items.length;
+
+    for (let i = 0; i < items.length; i++) {
+      const subTodos = items[i].subTodos;
+      if (subTodos.length > 0) {
+        traverse(subTodos);
       }
-    });
+    }
   };
+
+  traverse(data);
+
+  return count;
+};

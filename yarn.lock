@@ -6803,6 +6803,11 @@ jsonpointer@^5.0.0:
     array-includes "^3.1.5"
     object.assign "^4.1.3"
 
+jwebt@^0.0.4:
+  version "0.0.4"
+  resolved "https://registry.yarnpkg.com/jwebt/-/jwebt-0.0.4.tgz#c2871e58118efc6f19d19c97caaba457f4d07496"
+  integrity sha512-OotZuEg///WpmAJp3UtDnkj4ke7VKgw5VtmcJX9VU3fiAeHXW32Eljfg9X6SyOC20brvHv3muaZjFRuPlliTMw==
+
 kind-of@^6.0.2:
   version "6.0.3"
   resolved "https://registry.yarnpkg.com/kind-of/-/kind-of-6.0.3.tgz#07c05034a6c349fa06e24fa35aa76db4580ce4dd"

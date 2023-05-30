@@ -17,13 +17,15 @@ import { generateJwtToken } from "../utils/json-token.util";
 import { NavigateFunction, useNavigate } from "react-router-dom";
 import { APP_ROUTE } from "../utils/route.constant";
 import { User } from "../utils/interfaces/user.interface";
+import { TodoProvider } from "./todo-context";
+import { isEmpty } from "lodash";
 
 interface AuthContextType {
   isLoggedIn: boolean;
   login: (payload: { email: string; password: string }) => void;
   logout: () => void;
   isAuthenticated: boolean;
-  userDetails: User
+  userDetails: User;
 }
 
 const AuthContext = createContext<AuthContextType | null>(null);
@@ -36,14 +38,14 @@ export const useAuth = (): AuthContextType => {
   return context;
 };
 
-export const wait = (
+export const wait = async (
   time: number,
   email: string,
   password: string,
   navigate: NavigateFunction
 ) => {
   return new Promise<void>((resolve, reject) => {
-    setTimeout(() => {
+    setTimeout(async () => {
       if (
         (email === MockUserDetails.email &&
           password !== MockUserDetails.password) ||
@@ -57,7 +59,7 @@ export const wait = (
         password === MockUserDetails.password
       ) {
         const { password, todos, ...restData } = MockUserDetails;
-        const token = generateJwtToken(restData);
+        const token = await generateJwtToken(restData);
 
         setLocalStorageItem(LOCAL_KEYS.ACCESS_TOKEN, token);
         setLocalStorageItem(LOCAL_KEYS.USER_DETAILS, restData);
@@ -86,7 +88,7 @@ export const AuthProvider: React.FC = ({ children }) => {
       setIsLoggedIn(true);
 
       toast.promise(wait(2000, payload.email, payload.password, navigate), {
-        loading: "please wait while we are searching for you",
+        loading: "Please wait while we are searching for you",
         success: (successMsg) => {
           return "Login Successfull";
         },
@@ -97,13 +99,15 @@ export const AuthProvider: React.FC = ({ children }) => {
   );
 
   const logout = () => {
+    setIsAuthenticated(false)
     setIsLoggedIn(false);
     removeLocalStorageItem(LOCAL_KEYS.ACCESS_TOKEN);
+    navigate(APP_ROUTE.HOME);
   };
 
   useEffect(() => {
     const token = getLocalStorageItem(LOCAL_KEYS.ACCESS_TOKEN);
-    !!token && setIsAuthenticated(true);
+    !isEmpty(token) && setIsAuthenticated(true);
   }, [login]);
 
   const value: AuthContextType = {
@@ -111,8 +115,12 @@ export const AuthProvider: React.FC = ({ children }) => {
     login,
     logout,
     isAuthenticated,
-    userDetails
+    userDetails,
   };
 
-  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
+  return (
+    <AuthContext.Provider value={value}>
+      <TodoProvider>{children}</TodoProvider>
+    </AuthContext.Provider>
+  );
 };

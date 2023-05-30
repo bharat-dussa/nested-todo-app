@@ -3,9 +3,17 @@ import { FC } from "react";
 import { Todo } from "../../utils/interfaces/todo.interface";
 import { InfoCircleOutlined } from "@ant-design/icons";
 
-const DeleteModal: FC<
-  ModalProps & { currentSelectedTodo: Todo | undefined }
-> = ({ open, onOk, onCancel, currentSelectedTodo, ...props }) => {
+interface IDeleteModal extends ModalProps {
+  currentSelectedTodo: Todo | undefined;
+}
+
+const DeleteModal: FC<IDeleteModal> = ({
+  open,
+  onOk,
+  onCancel,
+  currentSelectedTodo,
+  ...props
+}) => {
   const data = [
     {
       title: "Delete current todo",

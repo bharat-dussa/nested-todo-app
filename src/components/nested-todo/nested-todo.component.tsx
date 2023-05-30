@@ -1,127 +1,47 @@
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 import NoTodo from "../not-todo/not-todo.component";
 import AddTodo from "../common/add-todo.component";
-import { Modal, Tree } from "antd";
+import { Card, Col, Row, Statistic, Tree } from "antd";
 import {
   LOCAL_KEYS,
-  getLocalStorageItem,
   setLocalStorageItem,
 } from "../../utils/local-storage.util";
-import TextArea from "antd/es/input/TextArea";
-import {
-  deleteTodoRecursively,
-  extractCheckedIds,
-  generateId,
-  handleAddSubTodoRecursively,
-  toggleTodoRecursively,
-} from "../../utils/common.utils";
+import { countTotalData } from "../../utils/common.utils";
 import "./nested-todo.less";
-import { DeleteOutlined, FileAddOutlined } from "@ant-design/icons";
+import { DownOutlined } from "@ant-design/icons";
 import DeleteModal from "../modals/delete-modal.component";
-
-interface Todo {
-  id: string;
-  name: string;
-  isChecked: boolean;
-  subTodos: Todo[];
-}
+import { AddTodoModal } from "../modals/add-todo-modal.component";
+import { useTodos } from "../../store/todo-context";
+import TodoNode from "../tree-node/tree-node.component";
+import { Todo } from "../../utils/interfaces/todo.interface";
 
 const TodoApp: React.FC = () => {
-  const [todos, setTodos] = useState<Todo[]>(
-    getLocalStorageItem(LOCAL_KEYS.USER_TASKS) || []
-  );
-  const [newTodoName, setNewTodoName] = useState("");
-  const [newSubTodoName, setSubNewTodoName] = useState("");
-  const [checkedKeys, setCheckedKeys] = useState<React.Key[]>(
-    extractCheckedIds()
-  );
-  const [selectedKeys, setSelectedKeys] = useState<React.Key[]>([]);
-  const [currentSelectedTodo, setCurrentSelectedTodo] = useState<Todo>();
+  const {
+    checkedKeys,
+    currentSelectedTodo,
+    newSubTodoName,
+    selectedKeys,
+    setCurrentSelectedTodo,
+    setSubNewTodoName,
+    todos,
+    onCheck,
+    handleToggleTodo,
+    onSelect,
+    handleDeleteTodo,
+    handleAddSubTodo,
+    setIsError,
+  } = useTodos();
+
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
 
-  const onCheck = (checkedKeysValue: any, { node }: any) => {
-    const { key } = node;
-    const checkedTodoIds = checkedKeysValue.checked || [];
-
-    handleToggleTodo(key);
-    setCheckedKeys(checkedTodoIds);
-  };
-
-  const onSelect = (selectedKeysValue: React.Key[], info: any) => {
-    setSelectedKeys(selectedKeysValue);
-  };
-
-  const handleAddTodo = () => {
-    if (newTodoName.trim() === "") {
-      return;
-    }
-
-    const newTodo: Todo = {
-      id: generateId(),
-      name: newTodoName,
-      isChecked: false,
-      subTodos: [],
-    };
-
-    setTodos((prevTodos) => [...prevTodos, newTodo]);
-    setNewTodoName("");
-  };
-
-  const handleToggleTodo = useCallback((todoId: string) => {
-    setTodos((prevTodos) => {
-      return toggleTodoRecursively(prevTodos, todoId);
-    });
-  }, []);
-
-  const handleDeleteTodo = useCallback((todoId: string) => {
-    setTodos((prevTodos) => {
-      return deleteTodoRecursively(prevTodos, todoId);
-    });
-  }, []);
-
-  const handleAddSubTodo = (parentId: string) => {
-    const subTodoName = newSubTodoName;
-    if (!subTodoName || subTodoName.trim() === "") {
-      return;
-    }
-
-    const newSubTodo: Todo = {
-      id: generateId(),
-      name: subTodoName,
-      isChecked: false,
-      subTodos: [],
-    };
-
-    setTodos((prevTodos) =>
-      prevTodos.map((todo) => {
-        if (todo.id === parentId) {
-          return {
-            ...todo,
-            subTodos: [...todo.subTodos, newSubTodo],
-          };
-        } else if (todo.subTodos.length > 0) {
-          return {
-            ...todo,
-            subTodos: handleAddSubTodoRecursively(
-              todo.subTodos,
-              parentId,
-              newSubTodo
-            ),
-          };
-        } else {
-          return todo;
-        }
-      })
-    );
-
-    setSubNewTodoName("");
-  };
-
-  const showModal = (todo: Todo) => {
-    setCurrentSelectedTodo(todo);
-    setIsModalOpen(true);
-  };
+  const showModal = useCallback(
+    (todo: Todo) => {
+      setCurrentSelectedTodo(todo);
+      setIsModalOpen(true);
+    },
+    [setCurrentSelectedTodo]
+  );
 
   const handleOk = () => {
     handleAddSubTodo((currentSelectedTodo as Todo)?.id);
@@ -132,44 +52,34 @@ const TodoApp: React.FC = () => {
     setIsModalOpen(false);
   };
 
-  const handleDeleteModal = (todo: Todo) => {
-    setShowDeleteModal(true);
-    setCurrentSelectedTodo(todo);
+  const handleDeleteModal = useCallback(
+    (todo: Todo) => {
+      setShowDeleteModal(true);
+      setCurrentSelectedTodo(todo);
+    },
+    [setCurrentSelectedTodo]
+  );
+
+  const handleOnOKDeleteModal = () => {
+    handleDeleteTodo(currentSelectedTodo?.id as string);
+    setShowDeleteModal(false);
+  };
+
+  const handleOnCancelDeleteModal = () => {
+    setShowDeleteModal(false);
   };
 
   const convertResponseToTodoList = useCallback(
     (data: Todo[]) => {
       const convertTodo = (todo: any) => {
         return {
-          title: () => (
-            <div className="nested-todo visible">
-              <div className="flex justify-between gap-16">
-                <p
-                  className={
-                    checkedKeys.includes(todo.id)
-                      ? "line-through text-slate-400"
-                      : ""
-                  }
-                >
-                  {todo.name}
-                </p>
-                <div className="flex gap-4">
-                  <DeleteOutlined
-                    style={{
-                      color: "red",
-                    }}
-                    onClick={() => handleDeleteModal(todo)}
-                  />
-                  <FileAddOutlined
-                    style={{
-                      color: "text-primary-600",
-                    }}
-                    type="primary"
-                    onClick={() => showModal(todo)}
-                  />
-                </div>
-              </div>
-            </div>
+          title: (
+            <TodoNode
+              todo={todo}
+              checkedKeys={checkedKeys}
+              handleDeleteModal={handleDeleteModal}
+              showModal={showModal}
+            />
           ),
           key: todo.id,
           children: todo.subTodos ? todo.subTodos.map(convertTodo) : [],
@@ -178,7 +88,7 @@ const TodoApp: React.FC = () => {
 
       return data.map(convertTodo);
     },
-    [checkedKeys]
+    [checkedKeys, handleDeleteModal, showModal]
   );
 
   const treeData = useMemo(
@@ -190,58 +100,69 @@ const TodoApp: React.FC = () => {
     setLocalStorageItem(LOCAL_KEYS.USER_TASKS, todos);
   }, [todos, handleToggleTodo]);
 
-  const handleOnOKDeleteModal = () => {
-    handleDeleteTodo(currentSelectedTodo?.id as string);
-    setShowDeleteModal(false);
-  };
-
-  const handleOnCancelDeleteModal = () => {
-    setShowDeleteModal(false);
+  const handleOnChangeSubtaskName = (value: string) => {
+    if (value.trim() === "") {
+      setIsError(true);
+    } else {
+      setIsError(false);
+      setSubNewTodoName(value);
+    }
   };
 
   return (
     <div className="p-4 flex flex-col justify-center">
-      <div className="flex flex-col items-center">
+      <div className="p-8 flex-col items-center">
         <h1 className="text-2xl font-bold mb-4">Your Todos</h1>
-        <AddTodo
-          todoName={newTodoName}
-          onChangeAddTodo={(value) => setNewTodoName(value)}
-          onClickAddTodo={handleAddTodo}
-        />
+        <Row gutter={16} align="middle">
+          <Col span={12}>
+            <AddTodo />
+          </Col>
+          <Col span={12}>
+            <Card bordered={false}>
+              <Statistic
+                title="Todos completed"
+                value={checkedKeys.length}
+                precision={2}
+                suffix={`/ ${countTotalData(todos)}`}
+                valueStyle={{ color: "#3f8600" }}
+              />
+            </Card>
+          </Col>
+        </Row>
       </div>
       {todos.length > 0 ? (
-        <Tree
-          className="nested-tree"
-          checkable
-          checkStrictly
-          onCheck={onCheck}
-          checkedKeys={checkedKeys}
-          onSelect={onSelect}
-          selectedKeys={selectedKeys}
-          treeData={treeData}
-        />
+        <Card className="mb-20">
+          <Tree
+            rootStyle={{
+              color: "black",
+              fontSize: "12px",
+            }}
+            className="nested-tree"
+            checkable
+            checkStrictly
+            onCheck={onCheck}
+            checkedKeys={checkedKeys}
+            onSelect={onSelect}
+            selectedKeys={selectedKeys}
+            treeData={treeData}
+            showLine
+            switcherIcon={<DownOutlined className="text-bold" />}
+            blockNode
+            autoExpandParent
+          />
+        </Card>
       ) : (
         <NoTodo />
       )}
-      <Modal
-        title={
-          <p>
-            Add sub task for <b>{currentSelectedTodo?.name}</b>
-          </p>
-        }
+
+      <AddTodoModal
         open={isModalOpen}
         onOk={handleOk}
         onCancel={handleCancel}
-      >
-        <TextArea
-          rows={4}
-          className="text-sm"
-          placeholder="Add SubTodo"
-          value={newSubTodoName}
-          onChange={(e) => setSubNewTodoName(e.target.value)}
-        />
-      </Modal>
-
+        InputValue={newSubTodoName}
+        handleOnChangeInputValue={handleOnChangeSubtaskName}
+        currentSelectedTodo={currentSelectedTodo as Todo}
+      />
       <DeleteModal
         open={showDeleteModal}
         onOk={handleOnOKDeleteModal}

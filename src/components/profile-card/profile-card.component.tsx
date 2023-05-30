@@ -6,7 +6,11 @@ import {
   faAddressBook,
   faCalendarDays,
 } from "@fortawesome/free-regular-svg-icons";
-import { faPersonHalfDress } from "@fortawesome/free-solid-svg-icons";
+import {
+  faPersonHalfDress,
+  faRightFromBracket,
+} from "@fortawesome/free-solid-svg-icons";
+import { useAuth } from "../../store/app-store";
 
 const RenderIconWithContext = ({
   icon,
@@ -23,6 +27,9 @@ const RenderIconWithContext = ({
 };
 
 const ProfileCard = ({ UserDetails }: { UserDetails: User }) => {
+
+  const { logout } = useAuth();
+  
   return (
     <div className="p-6 sm:p-12 dark:bg-gray-900 dark:text-gray-100">
       <div className="flex flex-col space-y-4 md:space-y-0 md:space-x-6 md:flex-row">
@@ -53,6 +60,9 @@ const ProfileCard = ({ UserDetails }: { UserDetails: User }) => {
             context={UserDetails.gender}
           />
         </div>
+      </div>
+      <div className="cursor-pointer" onClick={logout}>
+        <RenderIconWithContext icon={faRightFromBracket} context="Log out" />
       </div>
     </div>
   );
