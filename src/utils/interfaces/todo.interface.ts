@@ -1,5 +1,5 @@
 export interface Todo {
-  dateOfCreation: string;
+  dateOfCreation?: string;
   id: string;
   isChecked: boolean;
   name: string;

@@ -1,10 +1,18 @@
+import { Todo } from "../../utils/interfaces/todo.interface";
+
 export interface IAddTodo {
   todoName: string;
-  onClickAddTodo: () => void | ((id: string) => void);
+  onClickAddTodo: (parentId: string) => void;
   onChangeAddTodo: (value: string) => void;
+  todo?: Todo;
 }
 
-const AddTodo = ({ todoName, onClickAddTodo, onChangeAddTodo }: IAddTodo) => {
+const AddTodo = ({
+  todoName,
+  todo,
+  onClickAddTodo,
+  onChangeAddTodo,
+}: IAddTodo) => {
   return (
     <div className="flex gap-4">
       {" "}
@@ -17,7 +25,7 @@ const AddTodo = ({ todoName, onClickAddTodo, onChangeAddTodo }: IAddTodo) => {
       />
       <button
         className="rounded-md bg-primary-600 p-1 px-5 text-white"
-        onClick={onClickAddTodo}
+        onClick={() => onClickAddTodo(todo?.id as string)}
       >
         Add Todo
       </button>

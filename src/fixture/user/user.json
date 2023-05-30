@@ -6,5 +6,52 @@
     "name": "John Smith",
     "password": "{Test@123}",
     "phoneNumber": "+1 (555) 123-4567",
-    "todos": []
+    "todos": [
+        {
+            "dateOfCreation": "30/05/2023",
+            "id": "1234",
+            "isChecked": false,
+            "name": "test todo",
+            "subTodos": [
+                {
+                    "dateOfCreation": "30/05/2023",
+                    "id": "1234-1",
+                    "isChecked": false,
+                    "name": "test todo1",
+                    "subTodos": [
+                        {
+                            "dateOfCreation": "30/05/2023",
+                            "id": "1234-1-1",
+                            "isChecked": false,
+                            "name": "test todo2",
+                            "subTodos": [
+                                
+                                    {
+                                        "id": "_48b5dpif9",
+                                        "isChecked": false,
+                                        "name": "test todo3",
+                                        "subTodos": [
+                                            {
+                                                "id": "_w2ydfelp5",
+                                                "isChecked": false,
+                                                "name": "1.1",
+                                                "subTodos": [
+                                                    {
+                                                        "id": "_rczy8t72t",
+                                                        "isChecked": false,
+                                                        "name": "1.2",
+                                                        "subTodos": []
+                                                    }
+                                                ]
+                                            }
+                                        ]
+                                    }
+                                
+                            ]
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
 }
