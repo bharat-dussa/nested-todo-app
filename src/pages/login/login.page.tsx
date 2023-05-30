@@ -2,6 +2,7 @@ import { useFormik } from "formik";
 import ErrorText from "../../components/error-text/error-text";
 import { LOGIN_FORM_VALIDATION_SCHEMA } from "../../utils/validation-schema.util";
 import { useAuth } from "../../store/app-store";
+import { Tag } from "antd";
 
 const INITIAL_FORM_VALUES = {
   password: "",
@@ -22,9 +23,18 @@ const LoginPage = () => {
 
   return (
     <div className="flex flex-col items-center justify-center px-6 py-8 mx-auto md:h-screen lg:py-0">
+      <div className="flex flex-col gap-2 mb-8">
+        <Tag bordered={false} color="magenta">
+          email: test@gmail.com
+        </Tag>
+        <Tag bordered={false} color="magenta">
+          password: {JSON.stringify("{Test@123}")}
+        </Tag>
+      </div>
       <p className="flex items-center mb-6 text-2xl font-semibold text-gray-900">
         Nested Todo App
       </p>
+
       <div className="w-full bg-white rounded-lg shadow md:mt-0 sm:max-w-md xl:p-0">
         <div className="p-6 space-y-4 md:space-y-6 sm:p-8">
           <h1 className="text-xl font-bold leading-tight tracking-tight text-gray-900 md:text-2xl ">
