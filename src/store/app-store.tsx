@@ -1,6 +1,13 @@
-import React, { createContext, useContext, useState } from "react";
+import React, {
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useState,
+} from "react";
 import {
   LOCAL_KEYS,
+  getLocalStorageItem,
   removeLocalStorageItem,
   setLocalStorageItem,
 } from "../utils/local-storage.util";
@@ -14,6 +21,7 @@ interface AuthContextType {
   isLoggedIn: boolean;
   login: (payload: { email: string; password: string }) => void;
   logout: () => void;
+  isAuthenticated: boolean
 }
 
 const AuthContext = createContext<AuthContextType | null>(null);
@@ -66,29 +74,40 @@ export const wait = (
 
 export const AuthProvider: React.FC = ({ children }) => {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+
   const navigate = useNavigate();
 
-  const login = async (payload: { email: string; password: string }) => {
-    setIsLoggedIn(true);
+  const login = useCallback(
+    async (payload: { email: string; password: string }) => {
+      setIsLoggedIn(true);
 
-    toast.promise(wait(2000, payload.email, payload.password, navigate), {
-      loading: "please wait while we are searching for you",
-      success: (successMsg) => {
-        return "Login Successfull";
-      },
-      error: (err) => err,
-    });
-  };
+      toast.promise(wait(2000, payload.email, payload.password, navigate), {
+        loading: "please wait while we are searching for you",
+        success: (successMsg) => {
+          return "Login Successfull";
+        },
+        error: (err) => err,
+      });
+    },
+    [navigate]
+  );
 
   const logout = () => {
     setIsLoggedIn(false);
     removeLocalStorageItem(LOCAL_KEYS.ACCESS_TOKEN);
   };
 
+  useEffect(() => {
+    const token = getLocalStorageItem(LOCAL_KEYS.ACCESS_TOKEN);
+    !!token && setIsAuthenticated(true);
+  }, [login]);
+
   const value: AuthContextType = {
     isLoggedIn,
     login,
     logout,
+    isAuthenticated
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

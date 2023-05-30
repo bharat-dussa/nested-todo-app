@@ -1,5 +1,3 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
-import React from "react";
 import { useFormik } from "formik";
 import ErrorText from "../../components/error-text/error-text";
 import { LOGIN_FORM_VALIDATION_SCHEMA } from "../../utils/validation-schema.util";
@@ -11,8 +9,7 @@ const INITIAL_FORM_VALUES = {
 };
 
 const LoginPage = () => {
-
-    const { login } = useAuth();
+  const { login } = useAuth();
 
   const { handleSubmit, handleChange, handleBlur, values, touched, errors } =
     useFormik({
