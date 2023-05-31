@@ -149,6 +149,7 @@ const TodoApp: React.FC = () => {
             switcherIcon={<DownOutlined className="text-bold" />}
             blockNode
             autoExpandParent
+            expandedKeys={checkedKeys}
           />
         </Card>
       ) : (
