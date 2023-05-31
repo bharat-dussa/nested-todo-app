@@ -56,7 +56,7 @@ export const toggleTodoRecursively = (
 export const extractCheckedIds = (
   todos: Todo[] = getLocalStorageItem(LOCAL_KEYS.USER_TASKS) as Todo[]
 ): string[] => {
-  return todos.reduce((checkedIds: string[], todo: Todo) => {
+  return todos?.reduce((checkedIds: string[], todo: Todo) => {
     if (todo.isChecked) {
       checkedIds.push(todo.id);
     }
