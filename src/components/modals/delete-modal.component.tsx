@@ -42,6 +42,12 @@ const DeleteModal: FC<IDeleteModal> = ({
       onOk={onOk}
       onCancel={onCancel}
       {...props}
+      okButtonProps={{
+        style: {
+          backgroundColor: "#5468FF",
+          borderRadius: 6,
+        },
+      }}
     >
       <div className="mt-8 mb-4">
         <Tag

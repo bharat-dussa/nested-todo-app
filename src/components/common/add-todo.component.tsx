@@ -2,6 +2,7 @@ import { FC, useState } from "react";
 import { Todo } from "../../utils/interfaces/todo.interface";
 import { AddTodoModal } from "../modals/add-todo-modal.component";
 import { useTodos } from "../../store/todo-context";
+import PrimaryButton from "./button.component";
 
 export interface IAddTodo {
   todoName: string;
@@ -36,12 +37,7 @@ const AddTodo: FC = () => {
 
   return (
     <div className="flex gap-4">
-      <button
-        className="rounded-md bg-primary-600 py-2 px-5 text-white"
-        onClick={() => setShowTodoModal(true)}
-      >
-        Add Todo
-      </button>
+      <PrimaryButton text="Add Todo" setShowTodoModal={setShowTodoModal} />
       <AddTodoModal
         open={showTodoModal}
         onOk={handleOk}

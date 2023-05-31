@@ -3,6 +3,7 @@ import React, {
   useCallback,
   useContext,
   useEffect,
+  useMemo,
   useState,
 } from "react";
 import {
@@ -44,7 +45,7 @@ export const wait = async (
   password: string,
   navigate: NavigateFunction
 ) => {
-  return new Promise<void>((resolve, reject) => {
+  return await new Promise<void>((resolve, reject) => {
     setTimeout(async () => {
       if (
         (email === MockUserDetails.email &&
@@ -87,36 +88,42 @@ export const AuthProvider: React.FC = ({ children }) => {
     async (payload: { email: string; password: string }) => {
       setIsLoggedIn(true);
 
-      toast.promise(wait(2000, payload.email, payload.password, navigate), {
-        loading: "Please wait while we are searching for you",
-        success: (successMsg) => {
-          return "Login Successfull";
-        },
-        error: (err) => err,
-      });
+      await toast.promise(
+        wait(2000, payload.email, payload.password, navigate),
+        {
+          loading: "Please wait while we are searching for you",
+          success: (successMsg) => {
+            return "Login Successfull";
+          },
+          error: (err) => err,
+        }
+      );
     },
     [navigate]
   );
 
-  const logout = () => {
-    setIsAuthenticated(false)
+  const logout = useCallback(() => {
+    setIsAuthenticated(false);
     setIsLoggedIn(false);
     removeLocalStorageItem(LOCAL_KEYS.ACCESS_TOKEN);
     navigate(APP_ROUTE.HOME);
-  };
+  }, [navigate]);
 
   useEffect(() => {
     const token = getLocalStorageItem(LOCAL_KEYS.ACCESS_TOKEN);
     !isEmpty(token) && setIsAuthenticated(true);
   }, [login]);
 
-  const value: AuthContextType = {
-    isLoggedIn,
-    login,
-    logout,
-    isAuthenticated,
-    userDetails,
-  };
+  const value: AuthContextType = useMemo(
+    () => ({
+      isLoggedIn,
+      login,
+      logout,
+      isAuthenticated,
+      userDetails,
+    }),
+    [isAuthenticated, isLoggedIn, login, logout, userDetails]
+  );
 
   return (
     <AuthContext.Provider value={value}>

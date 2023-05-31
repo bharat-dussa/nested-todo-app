@@ -3,6 +3,7 @@ import {
   useCallback,
   useContext,
   useEffect,
+  useMemo,
   useState,
 } from "react";
 import { Todo } from "../utils/interfaces/todo.interface";
@@ -62,7 +63,7 @@ export const TodoProvider: React.FC = ({ children }) => {
 
   const [isError, setIsError] = useState(false);
 
-  const handleAddTodo = () => {
+  const handleAddTodo = useCallback(() => {
     if (newTodoName.trim() === "") {
       setIsError(true);
       return;
@@ -77,7 +78,7 @@ export const TodoProvider: React.FC = ({ children }) => {
 
     setTodos((prevTodos) => [...prevTodos, newTodo]);
     setNewTodoName("");
-  };
+  }, [newTodoName]);
 
   const handleToggleTodo = useCallback(
     (todoId: string) => {
@@ -88,15 +89,18 @@ export const TodoProvider: React.FC = ({ children }) => {
     [setTodos]
   );
 
-  const onCheck = (checkedKeysValue: any, { node }: any) => {
-    const { key } = node;
-    const checkedTodoIds = checkedKeysValue.checked || [];
+  const onCheck = useCallback(
+    (checkedKeysValue: any, { node }: any) => {
+      const { key } = node;
+      const checkedTodoIds = checkedKeysValue.checked || [];
 
-    handleToggleTodo(key);
-    setCheckedKeys(checkedTodoIds);
-  };
+      handleToggleTodo(key);
+      setCheckedKeys(checkedTodoIds);
+    },
+    [handleToggleTodo]
+  );
 
-  const handleAddSubTodo = (parentId: string) => {
+  const handleAddSubTodo = useCallback((parentId: string) => {
     const subTodoName = newSubTodoName;
     if (!subTodoName || subTodoName.trim() === "") {
       setIsError(true);
@@ -107,7 +111,7 @@ export const TodoProvider: React.FC = ({ children }) => {
       id: generateId(),
       name: subTodoName,
       isChecked: false,
-      subTodos: []
+      subTodos: [],
     };
 
     setTodos((prevTodos) =>
@@ -133,7 +137,7 @@ export const TodoProvider: React.FC = ({ children }) => {
     );
 
     setSubNewTodoName("");
-  };
+  }, [newSubTodoName]);
 
   const onSelect = (selectedKeysValue: React.Key[], info: any) => {
     setSelectedKeys(selectedKeysValue);
@@ -154,28 +158,44 @@ export const TodoProvider: React.FC = ({ children }) => {
     setCheckedKeys(extractCheckedIds());
   }, [todos]);
 
-  const todoProps: TodoContextType = {
-    checkedKeys,
-    currentSelectedTodo,
-    handleAddSubTodo,
-    handleAddTodo,
-    handleDeleteTodo,
-    handleToggleTodo,
-    isError,
-    newSubTodoName,
-    newTodoName,
-    onCheck,
-    onSelect,
-    selectedKeys,
-    setCheckedKeys,
-    setCurrentSelectedTodo,
-    setIsError,
-    setNewTodoName,
-    setSelectedKeys,
-    setSubNewTodoName,
-    setTodos,
-    todos,
-  };
+  const todoProps: TodoContextType = useMemo(
+    () => ({
+      checkedKeys,
+      currentSelectedTodo,
+      handleAddSubTodo,
+      handleAddTodo,
+      handleDeleteTodo,
+      handleToggleTodo,
+      isError,
+      newSubTodoName,
+      newTodoName,
+      onCheck,
+      onSelect,
+      selectedKeys,
+      setCheckedKeys,
+      setCurrentSelectedTodo,
+      setIsError,
+      setNewTodoName,
+      setSelectedKeys,
+      setSubNewTodoName,
+      setTodos,
+      todos,
+    }),
+    [
+      checkedKeys,
+      currentSelectedTodo,
+      handleAddSubTodo,
+      handleAddTodo,
+      handleDeleteTodo,
+      handleToggleTodo,
+      isError,
+      newSubTodoName,
+      newTodoName,
+      onCheck,
+      selectedKeys,
+      todos,
+    ]
+  );
 
   return (
     <TodoContext.Provider value={todoProps}>{children}</TodoContext.Provider>

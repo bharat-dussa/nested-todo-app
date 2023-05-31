@@ -16,9 +16,8 @@ export const AddTodoModal: FC<ISubTaskModal> = ({
   handleOnChangeInputValue,
   ...props
 }) => {
-
   const { isError } = useTodos();
-   
+
   return (
     <Modal
       title={
@@ -36,10 +35,16 @@ export const AddTodoModal: FC<ISubTaskModal> = ({
         </Typography.Text>
       }
       {...props}
+      okButtonProps={{
+        style: {
+          backgroundColor: "#5468FF",
+          borderRadius: 6,
+        },
+      }}
     >
       <TextArea
         rows={4}
-        status={isError ? "error" : ''}
+        status={isError ? "error" : ""}
         className="text-sm"
         placeholder="Add SubTodo"
         value={InputValue}
