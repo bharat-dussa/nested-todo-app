@@ -121,7 +121,7 @@ const TodoApp: React.FC = () => {
             <Card bordered={false}>
               <Statistic
                 title="Todos completed"
-                value={checkedKeys.length}
+                value={checkedKeys?.length ?? 0}
                 precision={2}
                 suffix={`/ ${countTotalData(todos)}`}
                 valueStyle={{ color: "#3f8600" }}
