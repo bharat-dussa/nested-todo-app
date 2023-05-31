@@ -1,4 +1,10 @@
-import { createContext, useCallback, useContext, useState } from "react";
+import {
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useState,
+} from "react";
 import { Todo } from "../utils/interfaces/todo.interface";
 import { LOCAL_KEYS, getLocalStorageItem } from "../utils/local-storage.util";
 import {
@@ -50,9 +56,7 @@ export const TodoProvider: React.FC = ({ children }) => {
   );
   const [newTodoName, setNewTodoName] = useState("");
   const [newSubTodoName, setSubNewTodoName] = useState("");
-  const [checkedKeys, setCheckedKeys] = useState<React.Key[]>(
-    extractCheckedIds()
-  );
+  const [checkedKeys, setCheckedKeys] = useState<React.Key[]>([]);
   const [currentSelectedTodo, setCurrentSelectedTodo] = useState<Todo>();
   const [selectedKeys, setSelectedKeys] = useState<React.Key[]>([]);
 
@@ -139,9 +143,15 @@ export const TodoProvider: React.FC = ({ children }) => {
       setTodos((prevTodos) => {
         return deleteTodoRecursively(prevTodos, todoId);
       });
+      setCheckedKeys(extractCheckedIds());
     },
-    [setTodos]
+
+    []
   );
+
+  useEffect(() => {
+    setCheckedKeys(extractCheckedIds());
+  }, [todos]);
 
   const todoProps: TodoContextType = {
     checkedKeys,
