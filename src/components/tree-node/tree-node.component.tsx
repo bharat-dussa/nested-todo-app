@@ -26,7 +26,7 @@ const TodoNode = ({
           <Typography.Text
             ellipsis
             className={
-              checkedKeys.includes(todo.id)
+              checkedKeys?.includes(todo.id)
                 ? "line-through text-slate-400 w-96"
                 : "w-96"
             }
