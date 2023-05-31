@@ -99,6 +99,7 @@ export const TodoProvider: React.FC = ({ children }) => {
   const handleAddSubTodo = (parentId: string) => {
     const subTodoName = newSubTodoName;
     if (!subTodoName || subTodoName.trim() === "") {
+      setIsError(true);
       return;
     }
 
@@ -106,7 +107,7 @@ export const TodoProvider: React.FC = ({ children }) => {
       id: generateId(),
       name: subTodoName,
       isChecked: false,
-      subTodos: [],
+      subTodos: []
     };
 
     setTodos((prevTodos) =>

@@ -44,8 +44,14 @@ const TodoApp: React.FC = () => {
   );
 
   const handleOk = () => {
-    handleAddSubTodo((currentSelectedTodo as Todo)?.id);
-    setIsModalOpen(false);
+    if (newSubTodoName.trim() !== "") {
+      handleAddSubTodo((currentSelectedTodo as Todo)?.id);
+      setIsModalOpen(false);
+
+      return;
+    }
+
+    setIsError(true);
   };
 
   const handleCancel = () => {
@@ -101,12 +107,8 @@ const TodoApp: React.FC = () => {
   }, [todos, handleToggleTodo]);
 
   const handleOnChangeSubtaskName = (value: string) => {
-    if (value.trim() === "") {
-      setIsError(true);
-    } else {
-      setIsError(false);
-      setSubNewTodoName(value);
-    }
+    setSubNewTodoName(value);
+    setIsError(false);
   };
 
   return (
